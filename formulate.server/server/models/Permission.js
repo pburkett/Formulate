@@ -10,7 +10,6 @@ const Permission = new Schema(
   {
     collectionName: { type: String, required: true },
     itemId: { type: String, required: true },
-    public: { type: Boolean, default: false },
     canEditPerms: [UserSchema],
     canEdit: [UserSchema],
     canUse: [UserSchema]

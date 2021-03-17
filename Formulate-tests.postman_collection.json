@@ -1,0 +1,1540 @@
+{
+	"info": {
+		"_postman_id": "b32673ed-5ae3-4b01-b64c-f129aada429b",
+		"name": "Formulate-tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Formula Tests",
+			"item": [
+				{
+					"name": "Create Valid Formula",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Returns an Object\", ()=>{\r",
+									"    pm.expect(res).to.be.an('object')\r",
+									"})\r",
+									"\r",
+									"\r",
+									"pm.test(\"Formula has Proper inputed Values\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    pm.expect(res.ingredientList[0].name).to.be.eql('water')\r",
+									"})\r",
+									"console.log(res)\r",
+									"    var schema = {\r",
+									"    \"type\": \"object\",\r",
+									"    \"required\": [\r",
+									"        \"id\",\r",
+									"        \"name\",\r",
+									"        \"ingredientList\",\r",
+									"        \"flourList\",\r",
+									"        \"createdAt\",\r",
+									"        \"updatedAt\"\r",
+									"    ],\r",
+									"    \"properties\": {\r",
+									"        \"id\": {\r",
+									"            \"type\": \"string\",\r",
+									"        },\r",
+									"        \"name\": {\r",
+									"            \"type\": \"string\"\r",
+									"        },\r",
+									"        \"flourList\": {\"type\":\"array\", \"items\": [\r",
+									"            {\"type\":\"object\",\r",
+									"            \"properties\":{\r",
+									"                \"name\":{\"type\":\"string\"},\r",
+									"                \"percentage\":{\"type\":\"number\"}\r",
+									"                }}],\r",
+									"        \"ingredientList\":{\"type\":\"array\",\"items\": [\r",
+									"            {\"type\":\"object\",\r",
+									"            \"properties\":{\r",
+									"                \"name\":{\"type\":\"string\"},\r",
+									"                \"percentage\":{\"type\":\"number\"}\r",
+									"                }}],\r",
+									"    }}},\r",
+									"    \"additionalProperties\": true\r",
+									"}\r",
+									"pm.test('Formula Model is valid', function () {\r",
+									"    pm.response.to.have.jsonSchema(schema)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"name\": \"Test Name\",\r\n        \"flourList\":\r\n            [{\r\n                \"name\":\"flour\",\r\n                \"percentage\":20\r\n            },{\r\n                \"name\":\"flour other\",\r\n                \"percentage\":80\r\n            }],\r\n            \"ingredientList\":\r\n            [{\r\n                \"name\":\"water\",\r\n                \"percentage\":65\r\n            }]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/formulas",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"formulas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Invalid Formula",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"\r",
+									"pm.test(\"status code should be 406\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(406)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"name\": \"Test Name\",\r\n        \"flourList\":\r\n            [{\r\n                \"name\":\"flour\",\r\n                \"percentage\":10\r\n            },{\r\n                \"name\":\"flour other\",\r\n                \"percentage\":80\r\n            }],\r\n            \"ingredientList\":\r\n            [{\r\n                \"name\":\"water\",\r\n                \"percentage\":65\r\n            }]\r\n        \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/formulas",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"formulas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unauthenticated User Can Get Public Formula",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"            }],\r",
+									"            \"public\":true\r",
+									"  })}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Formula as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Returns an array of public formulas\", ()=>{\r",
+									"    pm.expect(res[0].name).to.be.eql('Test Name')\r",
+									"    pm.expect(res[0].ingredientList[0].name).to.be.eql('water')\r",
+									"    pm.expect(res[0].public).to.be.eql(true)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/formulas/public",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"formulas",
+								"public"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creator of Formula Can Get Formula",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"            }]\r",
+									"  })}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Formula as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Formula has Proper inputed Values\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    pm.expect(res.ingredientList[0].name).to.be.eql('water')\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/formulas/{{formulaId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"formulas",
+								"{{formulaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Un-authorized Users Cannot Use Formulas",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"            }]\r",
+									"  })}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Formula as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        \r",
+									"        console.log(res)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.variables.get(\"formulaId\");\r",
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 401\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(401)\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/formulas/{{formulaId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"formulas",
+								"{{formulaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authorized Users Can Use Formulas",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postBody = `{\r",
+									"      \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"            }],\r",
+									"            \"permissions\":{\r",
+									"                \"canUse\":[{\"userId\":\"${auth2id}\" }]\r",
+									"            }\r",
+									"  }`\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body:{mode: \"raw\",\r",
+									"      raw: postBody}\r",
+									"}\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Formula as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.variables.get(\"formulaId\");\r",
+									"\r",
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"pm.test(\"Formula has Proper inputed Values\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    pm.expect(res.ingredientList[0].name).to.be.eql('water')\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/formulas/{{formulaId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"formulas",
+								"{{formulaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creator of Formula Can Edit Formula",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"            }]\r",
+									"  })}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Formula as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Formula has Proper inputed Values\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name PUT')\r",
+									"    pm.expect(res.ingredientList[0].name).to.be.eql('water PUT')\r",
+									"    pm.expect(res.flourList[0].percentage).to.be.eql(30)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"name\": \"Test Name PUT\",\r\n        \"flourList\":\r\n            [{\r\n                \"name\":\"flour PUT\",\r\n                \"percentage\":30\r\n            },{\r\n                \"name\":\"flour other PUT\",\r\n                \"percentage\":70\r\n            }],\r\n            \"ingredientList\":\r\n            [{\r\n                \"name\":\"water PUT\",\r\n                \"percentage\":65\r\n            }]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/formulas/{{formulaId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"formulas",
+								"{{formulaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authorized User Can Edit Formula",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postBody = `{\r",
+									"      \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"            }],\r",
+									"            \"permissions\":{\r",
+									"                \"canEdit\":[{\"userId\":\"${auth2id}\" }]\r",
+									"            }\r",
+									"  }`\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"    body:{mode: \"raw\",\r",
+									"      raw: postBody}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Formula as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Formula has Proper inputed Values\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name PUT')\r",
+									"    pm.expect(res.ingredientList[0].name).to.be.eql('water PUT')\r",
+									"    pm.expect(res.flourList[0].percentage).to.be.eql(30)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"name\": \"Test Name PUT\",\r\n        \"flourList\":\r\n            [{\r\n                \"name\":\"flour PUT\",\r\n                \"percentage\":30\r\n            },{\r\n                \"name\":\"flour other PUT\",\r\n                \"percentage\":70\r\n            }],\r\n            \"ingredientList\":\r\n            [{\r\n                \"name\":\"water PUT\",\r\n                \"percentage\":65\r\n            }]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/formulas/{{formulaId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"formulas",
+								"{{formulaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid Formula Values get Rejected on Edit",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"            }]\r",
+									"  })}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Formula as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 406\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(406)\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"name\": \"Test Name PUT\",\r\n        \"flourList\":\r\n            [{\r\n                \"name\":\"flour PUT\",\r\n                \"percentage\":20\r\n            },{\r\n                \"name\":\"flour other PUT\",\r\n                \"percentage\":70\r\n            }],\r\n            \"ingredientList\":\r\n            [{\r\n                \"name\":\"water PUT\",\r\n                \"percentage\":65\r\n            }]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/formulas/{{formulaId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"formulas",
+								"{{formulaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unauthorized User Cannot Edit Formula",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"            }]\r",
+									"  })}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Formula as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 401\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(401)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"name\": \"Test Name PUT\",\r\n        \"flourList\":\r\n            [{\r\n                \"name\":\"flour PUT\",\r\n                \"percentage\":30\r\n            },{\r\n                \"name\":\"flour other PUT\",\r\n                \"percentage\":70\r\n            }],\r\n            \"ingredientList\":\r\n            [{\r\n                \"name\":\"water PUT\",\r\n                \"percentage\":65\r\n            }]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/formulas/{{formulaId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"formulas",
+								"{{formulaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creator of Formula Can Delete it",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"            }]\r",
+									"  })}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Formula as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"\r",
+									"pm.test(\"Deleted formula is returned, one last time\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    pm.expect(res.ingredientList[0].name).to.be.eql('water')\r",
+									"    pm.expect(res.flourList[0].percentage).to.be.eql(20)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/formulas/{{formulaId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"formulas",
+								"{{formulaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authorized User Can Delete Formula",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postBody = `{\r",
+									"      \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"            }],\r",
+									"            \"permissions\":{\r",
+									"                \"canEditPerms\":[{\"userId\":\"${auth2id}\" }]\r",
+									"            }\r",
+									"  }`\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"    body:{mode: \"raw\",\r",
+									"      raw: postBody}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Formula as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"\r",
+									"pm.test(\"Deleted formula is returned, one last time\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    pm.expect(res.ingredientList[0].name).to.be.eql('water')\r",
+									"    pm.expect(res.flourList[0].percentage).to.be.eql(20)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/formulas/{{formulaId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"formulas",
+								"{{formulaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unauthorized User Cannot Delete Formula Copy",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postBody = `{\r",
+									"      \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"            }],\r",
+									"            \"permissions\":{\r",
+									"                \"canEdit\":[{\"userId\":\"${auth2id}\" }]\r",
+									"            }\r",
+									"  }`\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"    body:{mode: \"raw\",\r",
+									"      raw: postBody}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Formula as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 401\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(401)\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/formulas/{{formulaId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"formulas",
+								"{{formulaId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "endpoint",
+			"value": "http://localhost:3000"
+		},
+		{
+			"key": "auth1",
+			"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlVDSnd6ZWc0Nnc3T1FhMmV0VU1HSyJ9.eyJpc3MiOiJodHRwczovL2Rldi1qeHZmdjRrcy51cy5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NjAzMDg3ZTg0YTdjNjMwMDY4OGNjMzRmIiwiYXVkIjpbImh0dHBzOi8vZ2VuZXJpYyIsImh0dHBzOi8vZGV2LWp4dmZ2NGtzLnVzLmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE2MTU5NDc5OTIsImV4cCI6MTYxNjAzNDM5MiwiYXpwIjoidThaU1g1UklTdmxnN2hEamtrTHNzOVFyRUZvMEJYMDQiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIn0.dPYODRfPjSVXOWyUsZiWJXSc7mZJLFIA-Yoyp0JJXFGYfAmxr0HJlZWrgdibEdKKgLtTgcrVuwJEGU1t3rzuKtyLWWMY_gbLct8WfJxva1nzrykGOltk-su_Bd7SGl5vqh6F5ZY41mWSeoHflPjb2vifb8_xzrLmZy2BNBJt5W3aaaiypHUGHjLad5c8fKsef-OoEWAvbjwYdFXdKeJFL8RbsgkPxw5LOS_qnfLzeukJS1MMzb4bMgcH9NIxSkA3WAgXryhvUcFVZ2UDuYHvDETHavImSha4gWPJpiUQ0EE_QlhHIpverZzhT_w35M6-viJQ6TMsXtyYCS_QLt8oBg"
+		},
+		{
+			"key": "auth2",
+			"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlVDSnd6ZWc0Nnc3T1FhMmV0VU1HSyJ9.eyJpc3MiOiJodHRwczovL2Rldi1qeHZmdjRrcy51cy5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NjAzOTQzMGZhOWE2NGYwMDY5MWY1MzRkIiwiYXVkIjpbImh0dHBzOi8vZ2VuZXJpYyIsImh0dHBzOi8vZGV2LWp4dmZ2NGtzLnVzLmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE2MTU5NDg5MzcsImV4cCI6MTYxNjAzNTMzNywiYXpwIjoidThaU1g1UklTdmxnN2hEamtrTHNzOVFyRUZvMEJYMDQiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIn0.QDvaxwEUj0JfFgjQ8qAStQEYUZSeEjJs4FntfyCCXEXf2EmBWhXpUasn4Kdz8a6tHz3n3yvKRfsCBocsL6ndtZIAdhVC986a4pAI2RiJaH3vKFzG6fbyqqEaJs1DWZIir7FEp6fTU6PUaIZwiMGdwfPD_TVNJ99AmguOHaBM6x83a8YyHYJeFW8SUBIZMzVf2jKhepbfwDVyyVlaGeOhAOwVysamumn_WCrvw0bP0QtDcfCrggJS0qvBz01wruvdocpUW0AEM3-ka8BD2vTnSQcb2zWusQxpoMD4cF_u9H_njaH4txdjbL1fd8OP_qkuWHiyb7CaW77gerA5Npw7VQ"
+		},
+		{
+			"key": "auth1ID",
+			"value": "3a12a148-cdf1-4f9c-9779-3f8a1a352462"
+		},
+		{
+			"key": "auth2ID",
+			"value": "b2b37292-86c1-4d41-aad8-cd5db6ff51ec"
+		}
+	]
+}

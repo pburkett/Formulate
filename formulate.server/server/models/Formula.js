@@ -10,7 +10,8 @@ const Formula = new Schema(
   {
     name: { type: String, required: true },
     ingredientList: [ItemSchema],
-    flourList: [ItemSchema]
+    flourList: [ItemSchema],
+    public: { type: Boolean, default: false }
   },
   { timestamps: true, toJSON: { virtuals: true } }
 )
