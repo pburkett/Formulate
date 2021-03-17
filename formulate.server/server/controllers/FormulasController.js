@@ -9,9 +9,8 @@ export class FormulasController extends BaseController {
     super('api/formulas')
     this.router
       .get('/public', this.getAllPublic)
-      .use(Auth0Provider.getAuthorizedUserInfo)
       .get('/:id', this.getOne)
-      // .get('', this.getAllByUser)
+      .use(Auth0Provider.getAuthorizedUserInfo)
       .post('', this.create)
       .put('/:id', this.edit)
       .delete('/:id', this.delete)
@@ -19,8 +18,11 @@ export class FormulasController extends BaseController {
 
   async getOne(req, res, next) {
     try {
-      if (await permissionsService.verifyUse(req.params.id, req.userInfo.id)) {
-        const data = await formulasService.getOne(req.params.id, req.userInfo.id)
+      const data = await formulasService.getOne(req.params.id)
+      if (!data.public) {
+        req.userInfo = await Auth0Provider.getUserInfoFromBearerToken(req.headers.authorization)
+      }
+      if (data.public || await permissionsService.verifyUse(req.params.id, req.userInfo.id)) {
         res.send(data)
       } else { throw new UnAuthorized('You do not have permission to use this Formula') }
     } catch (error) {

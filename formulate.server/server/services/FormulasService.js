@@ -2,7 +2,7 @@ import { dbContext } from '../db/DbContext'
 import { BadRequest, NotAcceptable } from '../utils/Errors'
 
 class FormulasService {
-  async getOne(id, userId) {
+  async getOne(id) {
     const res = await dbContext.Formulas.findById(id)
     return res
   }
