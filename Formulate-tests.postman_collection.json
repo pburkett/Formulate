@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "b32673ed-5ae3-4b01-b64c-f129aada429b",
+		"_postman_id": "e462cd9b-2877-4b2b-8f02-cbc2c90c4376",
 		"name": "Formulate-tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -35,7 +35,6 @@
 									"        let res = response.json()\r",
 									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
 									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
-									"        pm.variables.set(\"userId\", res.id)\r",
 									"    });\r",
 									"})"
 								],
@@ -134,7 +133,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Invalid Formula",
+					"name": "Cannot Create Invalid Formula",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -250,15 +249,15 @@
 									"        \"flourList\":\r",
 									"            [{\r",
 									"                \"name\":\"flour\",\r",
-									"                \"percentage\":20\r",
+									"                \"percentage\":21\r",
 									"            },{\r",
 									"                \"name\":\"flour other\",\r",
-									"                \"percentage\":80\r",
+									"                \"percentage\":79\r",
 									"            }],\r",
 									"            \"ingredientList\":\r",
 									"            [{\r",
 									"                \"name\":\"water\",\r",
-									"                \"percentage\":65\r",
+									"                \"percentage\":64\r",
 									"            }],\r",
 									"            \"public\":true\r",
 									"  })}\r",
@@ -294,9 +293,11 @@
 									"})\r",
 									"\r",
 									"pm.test(\"Returns an array of public formulas\", ()=>{\r",
-									"    pm.expect(res[0].name).to.be.eql('Test Name')\r",
-									"    pm.expect(res[0].ingredientList[0].name).to.be.eql('water')\r",
+									"    \r",
 									"    pm.expect(res[0].public).to.be.eql(true)\r",
+									"    pm.expect(typeof res[0].name).to.be.eql('string')\r",
+									"    pm.expect(typeof res[0].ingredientList[0].percentage).to.be.eql('number')\r",
+									"\r",
 									"})"
 								],
 								"type": "text/javascript"
@@ -318,6 +319,115 @@
 								"api",
 								"formulas",
 								"public"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unauthenticated User Can Get Public Formula by ID",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"            }],\r",
+									"            \"public\":true\r",
+									"  })}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Formula as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.variables.get(\"formulaId\");\r",
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Returns the public formula\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    pm.expect(res.ingredientList[0].name).to.be.eql('water')\r",
+									"    pm.expect(res.public).to.be.eql(true)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/formulas/{{formulaId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"formulas",
+								"{{formulaId}}"
 							]
 						}
 					},
@@ -1493,6 +1603,1610 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "DoughShape Tests",
+			"item": [
+				{
+					"name": "Create Minimum Valid Dough Shape",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Returns an Object\", ()=>{\r",
+									"    pm.expect(res).to.be.an('object')\r",
+									"})\r",
+									"\r",
+									"\r",
+									"pm.test(\"Dough Shape has Proper inputed and defaulted Values\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    pm.expect(res.doughWeight).to.be.eql(500)\r",
+									"    pm.expect(res.public).to.be.eql(false)\r",
+									"})\r",
+									"    var schema = {\r",
+									"    \"type\": \"object\",\r",
+									"    \"required\": [\r",
+									"        \"id\",\r",
+									"        \"name\",\r",
+									"       \"doughWeight\",\r",
+									"       \"public\",\r",
+									"        \"createdAt\",\r",
+									"        \"updatedAt\"\r",
+									"    ],\r",
+									"    \"properties\": {\r",
+									"        \"id\": {\r",
+									"            \"type\": \"string\",\r",
+									"        },\r",
+									"        \"name\": {\r",
+									"            \"type\": \"string\"\r",
+									"        },\r",
+									"        \"doughWeight\": {\r",
+									"            \"type\": \"number\"\r",
+									"        },\r",
+									"        \"public\": {\r",
+									"            \"type\": \"boolean\"\r",
+									"        }\r",
+									"        \r",
+									"    },\r",
+									"    \"additionalProperties\": true\r",
+									"}\r",
+									"pm.test('Dough Shape Model is valid', function () {\r",
+									"    pm.response.to.have.jsonSchema(schema)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"name\": \"Test Name\",\r\n        \"doughWeight\":500\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/doughshapes",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"doughshapes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Maximum Valid Dough Shape",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Returns an Object\", ()=>{\r",
+									"    pm.expect(res).to.be.an('object')\r",
+									"})\r",
+									"\r",
+									"\r",
+									"pm.test(\"Dough Shape has Proper inputed and defaulted Values\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    pm.expect(res.doughWeight).to.be.eql(500)\r",
+									"    pm.expect(res.public).to.be.eql(false)\r",
+									"    pm.expect(res.description).to.be.eql('Test Description')\r",
+									"    pm.expect(res.pan).to.be.eql('medium-loaf')\r",
+									"})\r",
+									"console.log(res)\r",
+									"    var schema = {\r",
+									"    \"type\": \"object\",\r",
+									"    \"required\": [\r",
+									"        \"id\",\r",
+									"        \"name\",\r",
+									"       \"doughWeight\",\r",
+									"       \"public\",\r",
+									"       \"pan\",\r",
+									"       \"description\",\r",
+									"        \"createdAt\",\r",
+									"        \"updatedAt\"\r",
+									"    ],\r",
+									"    \"properties\": {\r",
+									"        \"id\": {\r",
+									"            \"type\": \"string\",\r",
+									"        },\r",
+									"        \"name\": {\r",
+									"            \"type\": \"string\"\r",
+									"        },\r",
+									"        \"doughWeight\": {\r",
+									"            \"type\": \"number\"\r",
+									"        },\r",
+									"        \"description\":{\r",
+									"            \"type\":\"string\"\r",
+									"        },\r",
+									"        \"pan\":{\r",
+									"            \"type\":\"string\"\r",
+									"        },\r",
+									"        \"public\": {\r",
+									"            \"type\": \"boolean\"\r",
+									"        }\r",
+									"        \r",
+									"    },\r",
+									"    \"additionalProperties\": true\r",
+									"}\r",
+									"pm.test('Dough Shape Model is valid', function () {\r",
+									"    pm.response.to.have.jsonSchema(schema)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"name\": \"Test Name\",\r\n        \"doughWeight\":500,\r\n        \"description\":\"Test Description\",\r\n        \"pan\":\"medium-loaf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/doughshapes",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"doughshapes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unauthenticated User Can Get Public Dough Shapes",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"doughWeight\":501,\r",
+									"            \"public\":true\r",
+									"  })}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Formula as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"// pm.test(\"Returns an array of public formulas\", ()=>{\r",
+									"//     pm.expect(typeof res.name).to.be.eql('Test Name')\r",
+									"//     pm.expect(res.doughWeight).to.be.eql(501)\r",
+									"//     pm.expect(res.public).to.be.eql(false)\r",
+									"// })\r",
+									"var schema ={\r",
+									"\"type\":\"array\",\r",
+									"\"items\":\r",
+									" {\r",
+									"    \"type\": \"object\",\r",
+									"    \"required\": [\r",
+									"        \"id\",\r",
+									"        \"name\",\r",
+									"        \"doughWeight\",\r",
+									"        \"public\",\r",
+									"        \"createdAt\",\r",
+									"        \"updatedAt\"\r",
+									"    ],\r",
+									"    \"properties\": {\r",
+									"        \"id\": {\r",
+									"            \"type\": \"string\",\r",
+									"        },\r",
+									"        \"name\": {\r",
+									"            \"type\": \"string\"\r",
+									"        },\r",
+									"        \"doughWeight\": {\r",
+									"            \"type\": \"number\"\r",
+									"        },\r",
+									"        \"public\": {\r",
+									"            \"type\": \"boolean\"\r",
+									"        }\r",
+									"        \r",
+									"    }},\r",
+									"    \"additionalProperties\": true\r",
+									"}\r",
+									"pm.test('Dough Shape Model is valid', function () {\r",
+									"    pm.response.to.have.jsonSchema(schema)\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/doughshapes/public",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"doughshapes",
+								"public"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unauthenticated User Can Get Public Dough Shape by ID",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"doughWeight\":502,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\",\r",
+									"        \"public\":true\r",
+									"\r",
+									"  })}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Dough Shape\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Dough Shape as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Returns the correct public formula\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    pm.expect(res.doughWeight).to.be.eql(502)\r",
+									"    pm.expect(res.public).to.be.eql(true)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/doughshapes/{{doughShapeId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"doughshapes",
+								"{{doughShapeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creator of Dough Shape can get Dough Shape",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"doughWeight\":503,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"  })}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Dough Shape\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Dough Shape as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Returns the correct public formula\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    pm.expect(res.doughWeight).to.be.eql(503)\r",
+									"    pm.expect(res.public).to.be.eql(false)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/doughshapes/{{doughShapeId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"doughshapes",
+								"{{doughShapeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unauthorized User cannot get Dough Shape",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"doughWeight\":503,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"  })}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Dough Shape\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Dough Shape as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 401\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(401)\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/doughshapes/{{doughShapeId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"doughshapes",
+								"{{doughShapeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authorized User Can get Dough Shape",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postBody = `{ \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"doughWeight\":504,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\",\r",
+									"        \"permissions\":{\r",
+									"            \"canUse\": [{\"userId\": \"${auth2id}\"}]\r",
+									"        }\r",
+									"  }`\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"   body:{mode: \"raw\",\r",
+									"      raw: postBody}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Dough Shape\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Dough Shape as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Returns the correct public dough shape\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    pm.expect(res.doughWeight).to.be.eql(504)\r",
+									"    pm.expect(res.public).to.be.eql(false)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/doughshapes/{{doughShapeId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"doughshapes",
+								"{{doughShapeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creator of Dough Shape can edit Dough Shape",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"doughWeight\":500,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"  })}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Dough Shape\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Dough Shape as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Dough shape has correct properties\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name PUT')\r",
+									"    pm.expect(res.description).to.be.eql('Test Description PUT')\r",
+									"    pm.expect(res.doughWeight).to.be.eql(505)\r",
+									"    pm.expect(res.public).to.be.eql(false)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"name\": \"Test Name PUT\",\r\n        \"doughWeight\":505,\r\n        \"description\":\"Test Description PUT\",\r\n        \"pan\":\"medium-loaf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/doughshapes/{{doughShapeId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"doughshapes",
+								"{{doughShapeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authorized User Can Edit Dough Shape",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postBody = `{\r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"doughWeight\":500,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\",\r",
+									"        \"permissions\":{\r",
+									"            \"canEdit\":{\"userId\":\"${auth2id}\"}\r",
+									"\r",
+									"        }\r",
+									"}`\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: postBody\r",
+									"      }\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Dough Shape\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Dough Shape as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Dough shape has correct properties\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name PUT')\r",
+									"    pm.expect(res.description).to.be.eql('Test Description PUT')\r",
+									"    pm.expect(res.doughWeight).to.be.eql(505)\r",
+									"    pm.expect(res.public).to.be.eql(false)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"name\": \"Test Name PUT\",\r\n        \"doughWeight\":505,\r\n        \"description\":\"Test Description PUT\",\r\n        \"pan\":\"medium-loaf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/doughshapes/{{doughShapeId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"doughshapes",
+								"{{doughShapeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Dough Shape Values Must be Correct Types",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postBody = `{\r",
+									"        \"name\": 10,\r",
+									"        \"doughWeight\":500,\r",
+									"        \"description\":true,\r",
+									"        \"pan\":\"medium-loaf\",\r",
+									"        \"permissions\":{\r",
+									"            \"canEdit\":{\"userId\":\"${auth2id}\"}\r",
+									"        }\r",
+									"}`\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: postBody\r",
+									"      }\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Dough Shape\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Dough Shape as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(400)\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"name\": \"Test Name PUT\",\r\n        \"doughWeight\":\"505\",\r\n        \"description\":\"Test Description PUT\",\r\n        \"pan\":\"medium-loaf\",\r\n        \"public\":20\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/doughshapes/{{doughShapeId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"doughshapes",
+								"{{doughShapeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unuthorized User Cannot Edit Dough Shape",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postBody = `{\r",
+									"        \"name\": \"Test Name PUT\",\r",
+									"        \"doughWeight\":505,\r",
+									"        \"description\":\"Test Description PUT\",\r",
+									"        \"pan\":\"medium-loaf\",\r",
+									"        \"permissions\":{\r",
+									"            \"canUse\":{\"userId\":\"${auth2id}\"}\r",
+									"\r",
+									"        }\r",
+									"}`\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: postBody\r",
+									"      }\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Dough Shape\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Dough Shape as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(401)\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/doughshapes/{{doughShapeId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"doughshapes",
+								"{{doughShapeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creator of Dough Shape can Delete Dough Shape",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \r",
+									"        \"name\": \"Test Name\",\r",
+									"        \"doughWeight\":500,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"  })}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Dough Shape\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Dough Shape as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Dough shape is returned, one last time\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    pm.expect(res.description).to.be.eql('Test Description')\r",
+									"    pm.expect(res.doughWeight).to.be.eql(500)\r",
+									"    pm.expect(res.public).to.be.eql(false)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/doughshapes/{{doughShapeId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"doughshapes",
+								"{{doughShapeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Authorized User Can Delete Dough Shape",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postBody = `{ \"name\": \"Test Name\",\r",
+									"        \"doughWeight\":500,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\",\r",
+									"        \"permissions\":{\r",
+									"            \"canEditPerms\":[{\"userId\":\"${auth2id}\"}]\r",
+									"        }\r",
+									"\r",
+									"}`\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: postBody}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Dough Shape\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Dough Shape as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Dough shape is returned, one last time\", ()=>{\r",
+									"    pm.expect(res.name).to.be.eql('Test Name')\r",
+									"    pm.expect(res.description).to.be.eql('Test Description')\r",
+									"    pm.expect(res.doughWeight).to.be.eql(500)\r",
+									"    pm.expect(res.public).to.be.eql(false)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/doughshapes/{{doughShapeId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"doughshapes",
+								"{{doughShapeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unuthorized User Cannot Delete Dough Shape",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postBody = `{ \"name\": \"Test Name\",\r",
+									"        \"doughWeight\":500,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\",\r",
+									"        \"permissions\":{\r",
+									"            \"canEdit\":[{\"userId\":\"${auth2id}\"}]\r",
+									"        }\r",
+									"\r",
+									"}`\r",
+									"const postRequest = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: postBody}\r",
+									"};\r",
+									"// For post to work the account from Auth0 must have a profile within the database\r",
+									"pm.test(\"User Account Got/Created Before Trying to Post a Dough Shape\", ()=>{\r",
+									"    pm.sendRequest(getRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
+									"        pm.variables.set(\"userId\", res.id)\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Dough Shape as User 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(401)\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/doughshapes/{{doughShapeId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"doughshapes",
+								"{{doughShapeId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
@@ -1522,11 +3236,11 @@
 		},
 		{
 			"key": "auth1",
-			"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlVDSnd6ZWc0Nnc3T1FhMmV0VU1HSyJ9.eyJpc3MiOiJodHRwczovL2Rldi1qeHZmdjRrcy51cy5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NjAzMDg3ZTg0YTdjNjMwMDY4OGNjMzRmIiwiYXVkIjpbImh0dHBzOi8vZ2VuZXJpYyIsImh0dHBzOi8vZGV2LWp4dmZ2NGtzLnVzLmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE2MTU5NDc5OTIsImV4cCI6MTYxNjAzNDM5MiwiYXpwIjoidThaU1g1UklTdmxnN2hEamtrTHNzOVFyRUZvMEJYMDQiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIn0.dPYODRfPjSVXOWyUsZiWJXSc7mZJLFIA-Yoyp0JJXFGYfAmxr0HJlZWrgdibEdKKgLtTgcrVuwJEGU1t3rzuKtyLWWMY_gbLct8WfJxva1nzrykGOltk-su_Bd7SGl5vqh6F5ZY41mWSeoHflPjb2vifb8_xzrLmZy2BNBJt5W3aaaiypHUGHjLad5c8fKsef-OoEWAvbjwYdFXdKeJFL8RbsgkPxw5LOS_qnfLzeukJS1MMzb4bMgcH9NIxSkA3WAgXryhvUcFVZ2UDuYHvDETHavImSha4gWPJpiUQ0EE_QlhHIpverZzhT_w35M6-viJQ6TMsXtyYCS_QLt8oBg"
+			"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlVDSnd6ZWc0Nnc3T1FhMmV0VU1HSyJ9.eyJpc3MiOiJodHRwczovL2Rldi1qeHZmdjRrcy51cy5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NjAzMDg3ZTg0YTdjNjMwMDY4OGNjMzRmIiwiYXVkIjpbImh0dHBzOi8vZ2VuZXJpYyIsImh0dHBzOi8vZGV2LWp4dmZ2NGtzLnVzLmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE2MTYwMTIyOTUsImV4cCI6MTYxNjA5ODY5NSwiYXpwIjoidThaU1g1UklTdmxnN2hEamtrTHNzOVFyRUZvMEJYMDQiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIn0.In2VSKG0pfUM_t4rZSGn99aqO91sdgzNhvErmre0REjKrpuo3HAPy-jsdPT4V9RDLVLmvS9cj8yKhW4jApAA3XOYiMGLEzpOBBoSTV7fQGOOxrDUwFIJ23hlPAKEvR3hmRqXFXGH3cuu4hYPYFn4S_CivFyabd30i9O80PZSnuuLWRCX8javISZdwiUgZsH2b8VL42pvJcP0BpZj3fVEFvqkWeUKGcH3cJ9GwtQh2v3hJNU1Zf_bKcPX33v01LTyWZehsP--mcLzn98s_NoZEC0mFtKVpO2szL-CMCwaOHmuPdGcGGP-OUfaXoqzsktoYf_g3CmSMSTK9VgzqLPi4Q"
 		},
 		{
 			"key": "auth2",
-			"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlVDSnd6ZWc0Nnc3T1FhMmV0VU1HSyJ9.eyJpc3MiOiJodHRwczovL2Rldi1qeHZmdjRrcy51cy5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NjAzOTQzMGZhOWE2NGYwMDY5MWY1MzRkIiwiYXVkIjpbImh0dHBzOi8vZ2VuZXJpYyIsImh0dHBzOi8vZGV2LWp4dmZ2NGtzLnVzLmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE2MTU5NDg5MzcsImV4cCI6MTYxNjAzNTMzNywiYXpwIjoidThaU1g1UklTdmxnN2hEamtrTHNzOVFyRUZvMEJYMDQiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIn0.QDvaxwEUj0JfFgjQ8qAStQEYUZSeEjJs4FntfyCCXEXf2EmBWhXpUasn4Kdz8a6tHz3n3yvKRfsCBocsL6ndtZIAdhVC986a4pAI2RiJaH3vKFzG6fbyqqEaJs1DWZIir7FEp6fTU6PUaIZwiMGdwfPD_TVNJ99AmguOHaBM6x83a8YyHYJeFW8SUBIZMzVf2jKhepbfwDVyyVlaGeOhAOwVysamumn_WCrvw0bP0QtDcfCrggJS0qvBz01wruvdocpUW0AEM3-ka8BD2vTnSQcb2zWusQxpoMD4cF_u9H_njaH4txdjbL1fd8OP_qkuWHiyb7CaW77gerA5Npw7VQ"
+			"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlVDSnd6ZWc0Nnc3T1FhMmV0VU1HSyJ9.eyJpc3MiOiJodHRwczovL2Rldi1qeHZmdjRrcy51cy5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NjAzOTQzMGZhOWE2NGYwMDY5MWY1MzRkIiwiYXVkIjpbImh0dHBzOi8vZ2VuZXJpYyIsImh0dHBzOi8vZGV2LWp4dmZ2NGtzLnVzLmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE2MTYwMTIzODAsImV4cCI6MTYxNjA5ODc4MCwiYXpwIjoidThaU1g1UklTdmxnN2hEamtrTHNzOVFyRUZvMEJYMDQiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIn0.kl3QgOA7KKyD_66cEiUOt05skLy66YQcc1v4UkGBNrQUkby-sRLq1vXO64dR7lK6ROzlACvR5f-TLbN6LWrBhzM6iw9gXqxHjMvVK1H8ZEt3cV8f23nGVeg-RkPFNtWHa3Wz2FvLCNsiOtNcesOPkTu5ZoUsvag9QVOpyvrXa5Se1njEwW6LT8WvrCa0-hUBnhwJlCi4Cl6Jlcmm5xFD4T8UAYWCMmbxpFusG6PvAbw4yp3URoR2mZ82UPBbxepY71khJrbi-qiA1h39IO6U6gptNzN5oT-ia3Cx4nvoZI8vsFIp2RNizHcPkq84WM2gVTLyr4HuHKNdchwJRJwUmw"
 		},
 		{
 			"key": "auth1ID",
