@@ -6,11 +6,32 @@
 	},
 	"item": [
 		{
-			"name": "AA User Info",
+			"name": "Profiles",
 			"item": [
 				{
 					"name": "Verify User 1 Tokens and IDs",
 					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const bearer1 = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth1id = pm.collectionVariables.get(\"auth1ID\")\r",
+									"let res = pm.response.json();\r",
+									"\r",
+									"pm.test(\"User Account 1 Got/Created, and userID variable matches\", ()=>{\r",
+									"   if (res.id !== auth1id){\r",
+									"        postman.setNextRequest(null)\r",
+									"   }\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(res.id).to.be.eql(auth1id, 'Get Account by Id did not return proper object. Check your tokens and IDs to continue testing!')\r",
+									"        pm.variables.set(\"userId1\", res.id)\r",
+									"    });\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
 						{
 							"listen": "prerequest",
 							"script": {
@@ -52,27 +73,6 @@
 								],
 								"type": "text/javascript"
 							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const bearer1 = pm.collectionVariables.get(\"auth1\")\r",
-									"const auth1id = pm.collectionVariables.get(\"auth1ID\")\r",
-									"let res = pm.response.json();\r",
-									"\r",
-									"pm.test(\"User Account 1 Got/Created, and userID variable matches\", ()=>{\r",
-									"   if (res.id !== auth1id){\r",
-									"        postman.setNextRequest(null)\r",
-									"   }\r",
-									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
-									"        pm.expect(res.id).to.be.eql(auth1id, 'Get Account by Id did not return proper object')\r",
-									"        pm.variables.set(\"userId1\", res.id)\r",
-									"    });\r",
-									""
-								],
-								"type": "text/javascript"
-							}
 						}
 					],
 					"request": {
@@ -89,13 +89,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{endpoint}}/api/account",
+							"raw": "{{endpoint}}/api/accounts",
 							"host": [
 								"{{endpoint}}"
 							],
 							"path": [
 								"api",
-								"account"
+								"accounts"
 							]
 						}
 					},
@@ -127,7 +127,7 @@
 									"   }\r",
 									"    // pm.sendRequest(getRequest1, function (err, response) {\r",
 									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
-									"        pm.expect(res.id).to.be.eql(authid, 'Get Account by Id did not return proper object')\r",
+									"        pm.expect(res.id).to.be.eql(authid, 'Get Account by Id did not return proper object. Check your tokens and IDs to continue testing!')\r",
 									"    });\r",
 									""
 								],
@@ -149,13 +149,109 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{endpoint}}/api/account",
+							"raw": "{{endpoint}}/api/accounts",
 							"host": [
 								"{{endpoint}}"
 							],
 							"path": [
 								"api",
-								"account"
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify User 3 Tokens and IDs",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const bearer = pm.collectionVariables.get(\"auth3\")\r",
+									"const authid = pm.collectionVariables.get(\"auth3ID\")\r",
+									"let res = pm.response.json();\r",
+									"\r",
+									"pm.test(\"User Account 2 Got/Created, and userID variable matches\", ()=>{\r",
+									"    if (res.id !== authid){\r",
+									"        postman.setNextRequest(null)\r",
+									"   }\r",
+									"    // pm.sendRequest(getRequest1, function (err, response) {\r",
+									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
+									"        pm.expect(res.id).to.be.eql(authid, 'Get Account by Id did not return proper object. Check your tokens and IDs to continue testing!')\r",
+									"    });\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth3}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/accounts",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unauthenticated User can Get Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"const authid = pm.collectionVariables.get(\"auth1ID\")\r",
+									"\r",
+									"pm.test('Returns correct profile with the correct properties', () =>{\r",
+									"    pm.expect(res.id).to.be.eql(authid)\r",
+									"    pm.expect(typeof res.email).to.be.eql('string')\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/accounts/{{auth1ID}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"{{auth1ID}}"
 							]
 						}
 					},
@@ -164,7 +260,7 @@
 			]
 		},
 		{
-			"name": "DoughShape Tests",
+			"name": "Dough Shapes",
 			"item": [
 				{
 					"name": "Create Minimum Valid Dough Shape",
@@ -173,29 +269,7 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
-									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
-									"\r",
-									"const getRequest = {\r",
-									"  url: endpoint + '/api/account',\r",
-									"  method: 'Get',\r",
-									"  header: {\r",
-									"    'Content-Type': 'application/json',\r",
-									"    'Authorization': \"Bearer \" + bearer\r",
-									"  },\r",
-									"  body: {\r",
-									"  }\r",
-									"};\r",
-									"\r",
-									"// For post to work the account from Auth0 must have a profile within the database\r",
-									"pm.test(\"User Account Got/Created Before Trying to Post a Formula\", ()=>{\r",
-									"    pm.sendRequest(getRequest, function (err, response) {\r",
-									"        let res = response.json()\r",
-									"        pm.expect(typeof res).to.be.eql('object', 'Get Account by Id did not return an object')\r",
-									"        pm.expect(typeof res.id).to.be.eql('string', 'Get Account by Id did not return proper object')\r",
-									"        pm.variables.set(\"userId\", res.id)\r",
-									"    });\r",
-									"})"
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -838,6 +912,234 @@
 								"api",
 								"doughshapes",
 								"{{doughShapeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Can Get Own Dough Shapes by Profile",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"\r",
+									"const postRequest1 = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"   body:{mode: \"raw\",\r",
+									"      raw: `{ \r",
+									"        \"name\": \"Test Name 1\",\r",
+									"        \"doughWeight\":400,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"  }`\r",
+									"  }\r",
+									"};\r",
+									"\r",
+									"const postRequest2 = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"   body:{mode: \"raw\",\r",
+									"      raw: `{ \r",
+									"        \"name\": \"Test Name 2\",\r",
+									"        \"doughWeight\":400,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"  }`}\r",
+									"};\r",
+									"\r",
+									"pm.test(\"Post Dough Shape 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest1, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name 1')\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Dough Shape 2\", ()=>{\r",
+									"    pm.sendRequest(postRequest2, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name 2')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Returns the posted dough shapes\", ()=>{\r",
+									"    let found =res.find(d => d.name === \"Test Name 1\")\r",
+									"    pm.expect(typeof found).to.be.eql('object')\r",
+									"    found = res.find(d => d.name === \"Test Name 2\")\r",
+									"    pm.expect(typeof found).to.be.eql('object')\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/accounts/{{auth1ID}}/doughshapes",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"{{auth1ID}}",
+								"doughshapes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Can Get  Public Dough Shapes by Profile",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"\r",
+									"const postRequest1 = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"   body:{mode: \"raw\",\r",
+									"      raw: `{ \r",
+									"        \"name\": \"Test Name PUBLIC\",\r",
+									"        \"doughWeight\":400,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\",\r",
+									"        \"public\":true\r",
+									"          }`\r",
+									"  }\r",
+									"};\r",
+									"\r",
+									"const postRequest2 = {\r",
+									"  url: endpoint + '/api/doughshapes',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"   body:{mode: \"raw\",\r",
+									"      raw: `{ \r",
+									"        \"name\": \"Test Name PRIVATE\",\r",
+									"        \"doughWeight\":400,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"  }`}\r",
+									"};\r",
+									"\r",
+									"pm.test(\"Post Dough Shape 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest1, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name PUBLIC')\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post Dough Shape 2\", ()=>{\r",
+									"    pm.sendRequest(postRequest2, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name PRIVATE')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Returns the posted dough shapes\", ()=>{\r",
+									"    let found = res.find(d => d.name === \"Test Name PUBLIC\")\r",
+									"    console.log(found)\r",
+									"    pm.expect(typeof found).to.be.eql('object')\r",
+									"    found = res.find(d => d.name === \"Test Name PRIVATE\")\r",
+									"    pm.expect(typeof found).to.be.eql('undefined')\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/accounts/{{auth1ID}}/doughshapes",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"{{auth1ID}}",
+								"doughshapes"
 							]
 						}
 					},
@@ -1531,7 +1833,7 @@
 			]
 		},
 		{
-			"name": "Formula Tests",
+			"name": "Formulas",
 			"item": [
 				{
 					"name": "Create Valid Formula",
@@ -2173,6 +2475,391 @@
 								"api",
 								"formulas",
 								"{{formulaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Can Get Own Formulas by Profile",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"\r",
+									"const postRequest1 = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"   body:{mode: \"raw\",\r",
+									"      raw: `{ \r",
+									"        \"name\": \"Test Name 1\",\r",
+									"        \"doughWeight\":400,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"  }`\r",
+									"  }\r",
+									"};\r",
+									"\r",
+									"const postRequest2 = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"   body:{mode: \"raw\",\r",
+									"      raw: `{ \r",
+									"        \"name\": \"Test Name 2\",\r",
+									"        \"doughWeight\":400,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"  }`}\r",
+									"};\r",
+									"\r",
+									"pm.test(\"Post formula 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest1, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name 1')\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post formula 2\", ()=>{\r",
+									"    pm.sendRequest(postRequest2, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name 2')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Returns the correct public dough shape\", ()=>{\r",
+									"    pm.expect(res).to.include({ \r",
+									"        \"name\": \"Test Name 2\",\r",
+									"        \"doughWeight\":400,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\",\r",
+									"  })\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/profiles/{{auth1ID}}/formulas",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"profiles",
+								"{{auth1ID}}",
+								"formulas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Can Get Own Formulas by Profile",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"\r",
+									"const postRequest1 = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \"name\": \"Test Name 1\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":21\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":79\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":64\r",
+									"            }]\r",
+									"              })}\r",
+									"};\r",
+									"\r",
+									"const postRequest2 = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \"name\": \"Test Name 2\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":21\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":79\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":64\r",
+									"            }]\r",
+									"  })}\r",
+									"};\r",
+									"\r",
+									"pm.test(\"Post formula 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest1, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name 1')\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post formula 2\", ()=>{\r",
+									"    pm.sendRequest(postRequest2, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name 2')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Returns the posted Formulas\", ()=>{\r",
+									"    let found =res.find(d => d.name === \"Test Name 1\")\r",
+									"    pm.expect(typeof found).to.be.eql('object')\r",
+									"    found = res.find(d => d.name === \"Test Name 2\")\r",
+									"    pm.expect(typeof found).to.be.eql('object')\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/accounts/{{auth1ID}}/formulas",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"{{auth1ID}}",
+								"formulas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Can Get Public Formulas by Profile",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"const auth2id = pm.collectionVariables.get(\"auth2ID\")\r",
+									"\r",
+									"const postRequest1 = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \"name\": \"Test Name 1\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":21\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":79\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":64\r",
+									"            }],\r",
+									"            \"public\":\"true\"\r",
+									"              })}\r",
+									"};\r",
+									"\r",
+									"const postRequest2 = {\r",
+									"  url: endpoint + '/api/formulas',\r",
+									"  method: 'Post',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"      mode: \"raw\",\r",
+									"      raw: JSON.stringify({ \r",
+									"        \"name\": \"Test Name 2\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":21\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":79\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [{\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":64\r",
+									"            }]\r",
+									"  })}\r",
+									"};\r",
+									"\r",
+									"pm.test(\"Post formula 1\", ()=>{\r",
+									"    pm.sendRequest(postRequest1, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name 1')\r",
+									"    });\r",
+									"})\r",
+									"pm.test(\"Post formula 2\", ()=>{\r",
+									"    pm.sendRequest(postRequest2, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShapeId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('Test Name 2')\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Returns the posted Formulas\", ()=>{\r",
+									"    let found =res.find(d => d.name === \"Test Name 1\")\r",
+									"    pm.expect(typeof found).to.be.eql('object')\r",
+									"    found = res.find(d => d.name === \"Test Name 2\")\r",
+									"    pm.expect(typeof found).to.be.eql('undefined')\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/accounts/{{auth1ID}}/formulas",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"{{auth1ID}}",
+								"formulas"
 							]
 						}
 					},
@@ -2905,22 +3592,30 @@
 	"variable": [
 		{
 			"key": "endpoint",
-			"value": "https://formulate-0.herokuapp.com"
+			"value": "http://localhost:3000"
 		},
 		{
 			"key": "auth1",
-			"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlVDSnd6ZWc0Nnc3T1FhMmV0VU1HSyJ9.eyJpc3MiOiJodHRwczovL2Rldi1qeHZmdjRrcy51cy5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NjAzMDg3ZTg0YTdjNjMwMDY4OGNjMzRmIiwiYXVkIjpbImh0dHBzOi8vZ2VuZXJpYyIsImh0dHBzOi8vZGV2LWp4dmZ2NGtzLnVzLmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE2MTYwMTIyOTUsImV4cCI6MTYxNjA5ODY5NSwiYXpwIjoidThaU1g1UklTdmxnN2hEamtrTHNzOVFyRUZvMEJYMDQiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIn0.In2VSKG0pfUM_t4rZSGn99aqO91sdgzNhvErmre0REjKrpuo3HAPy-jsdPT4V9RDLVLmvS9cj8yKhW4jApAA3XOYiMGLEzpOBBoSTV7fQGOOxrDUwFIJ23hlPAKEvR3hmRqXFXGH3cuu4hYPYFn4S_CivFyabd30i9O80PZSnuuLWRCX8javISZdwiUgZsH2b8VL42pvJcP0BpZj3fVEFvqkWeUKGcH3cJ9GwtQh2v3hJNU1Zf_bKcPX33v01LTyWZehsP--mcLzn98s_NoZEC0mFtKVpO2szL-CMCwaOHmuPdGcGGP-OUfaXoqzsktoYf_g3CmSMSTK9VgzqLPi4Q"
-		},
-		{
-			"key": "auth2",
-			"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlVDSnd6ZWc0Nnc3T1FhMmV0VU1HSyJ9.eyJpc3MiOiJodHRwczovL2Rldi1qeHZmdjRrcy51cy5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NjAzOTQzMGZhOWE2NGYwMDY5MWY1MzRkIiwiYXVkIjpbImh0dHBzOi8vZ2VuZXJpYyIsImh0dHBzOi8vZGV2LWp4dmZ2NGtzLnVzLmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE2MTYwMTIzODAsImV4cCI6MTYxNjA5ODc4MCwiYXpwIjoidThaU1g1UklTdmxnN2hEamtrTHNzOVFyRUZvMEJYMDQiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIn0.kl3QgOA7KKyD_66cEiUOt05skLy66YQcc1v4UkGBNrQUkby-sRLq1vXO64dR7lK6ROzlACvR5f-TLbN6LWrBhzM6iw9gXqxHjMvVK1H8ZEt3cV8f23nGVeg-RkPFNtWHa3Wz2FvLCNsiOtNcesOPkTu5ZoUsvag9QVOpyvrXa5Se1njEwW6LT8WvrCa0-hUBnhwJlCi4Cl6Jlcmm5xFD4T8UAYWCMmbxpFusG6PvAbw4yp3URoR2mZ82UPBbxepY71khJrbi-qiA1h39IO6U6gptNzN5oT-ia3Cx4nvoZI8vsFIp2RNizHcPkq84WM2gVTLyr4HuHKNdchwJRJwUmw"
+			"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlVDSnd6ZWc0Nnc3T1FhMmV0VU1HSyJ9.eyJpc3MiOiJodHRwczovL2Rldi1qeHZmdjRrcy51cy5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NjAzMDg3ZTg0YTdjNjMwMDY4OGNjMzRmIiwiYXVkIjpbImh0dHBzOi8vZ2VuZXJpYyIsImh0dHBzOi8vZGV2LWp4dmZ2NGtzLnVzLmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE2MTYwOTgxMTksImV4cCI6MTYxNjE4NDUxOSwiYXpwIjoidThaU1g1UklTdmxnN2hEamtrTHNzOVFyRUZvMEJYMDQiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIn0.LXYaP00jba4jCATLyJXeFTDae1gfFBRWaMmz3_9u7algakWYzyv0JO2Ej55J-B0PlEg7WD1vJQrXK6C-tts-Gbf0ZnANrSGuu4lIv9SRrzv-BsKtc0sfQ0EeUm2fZCz-T7rg_Zc4x-1B3iTt5qP0_1xzJ_Df6tl_pbpeEJ71_mqUp9UT4eQpt3Bky7EzCxr4Dusey_mokVLFnE8UEZCW5A_qjo-OwYC2u216ixyaNw4t_XYyUf3SKvpmKuT-84NUfrOtlVtXRbjsZrL-0f2JVi4oO6Mx7xGNOvLEtIzonifxxzcU4Mpw7lJJCOeRu0faog8FY2UR96LZny4V_GwnjQ"
 		},
 		{
 			"key": "auth1ID",
 			"value": "3a12a148-cdf1-4f9c-9779-3f8a1a352462"
 		},
 		{
+			"key": "auth2",
+			"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlVDSnd6ZWc0Nnc3T1FhMmV0VU1HSyJ9.eyJpc3MiOiJodHRwczovL2Rldi1qeHZmdjRrcy51cy5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NjA1M2IzZGQ4OTVkYTAwMDY3YTM4YTM5IiwiYXVkIjpbImh0dHBzOi8vZ2VuZXJpYyIsImh0dHBzOi8vZGV2LWp4dmZ2NGtzLnVzLmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE2MTYxMDI5MzIsImV4cCI6MTYxNjE4OTMzMiwiYXpwIjoidThaU1g1UklTdmxnN2hEamtrTHNzOVFyRUZvMEJYMDQiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIn0.R9p-78EvGeUvUz7kH3LiidbXVgmO-6Hr1DdfkPmS1W5e32ILLf9Z15SBwFNdyMzENftetPUG073FOgIvtK4kf6dZ836HnjxUfDqxv5FrfOYoR-ve_inTKFcd1aFcLiqBknt88N16W34-tIyhTX7zzMs7NKZmq4533u_-7YP64dNQbkRNmKHV9xAOC5Ed6uGYHGRp7FkYV7vgVCONNs0t_Ayj4cj2GDHwGH8qrZOYiFEZS_cYX94alyLNYcTiC7W3ibN0vgwxHSJLFdfMWgw3t15pc3dvZsFeZgu_tkUGiZfTdVn7ioFo7k61ZpOh1qGinFZlCxNZnUej1rFsqiMzlg"
+		},
+		{
 			"key": "auth2ID",
+			"value": "7d662fd1-ef7b-4fd7-b41c-dba61ee0112d"
+		},
+		{
+			"key": "auth3",
+			"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlVDSnd6ZWc0Nnc3T1FhMmV0VU1HSyJ9.eyJpc3MiOiJodHRwczovL2Rldi1qeHZmdjRrcy51cy5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NjAzOTQzMGZhOWE2NGYwMDY5MWY1MzRkIiwiYXVkIjpbImh0dHBzOi8vZ2VuZXJpYyIsImh0dHBzOi8vZGV2LWp4dmZ2NGtzLnVzLmF1dGgwLmNvbS91c2VyaW5mbyJdLCJpYXQiOjE2MTYxMDQ4NjcsImV4cCI6MTYxNjE5MTI2NywiYXpwIjoidThaU1g1UklTdmxnN2hEamtrTHNzOVFyRUZvMEJYMDQiLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIn0.QYQM8UIuAQ7-qc3euaOxJuksZr7dU2SMjj1xg-T1D6V9vATJbf7nppgjbxisrbWMxo8P6Mc3I-xJ35k8Cu_JogCmpDF4UB5efz--sQDiNjfqz-hBhfIgmmtKja2dNKm0yRTpfqNs0ceFhK_xgTHdvfevzN1K_90OV2kvV7zMu4Brv9W7SW9FZjpnVHiywDGN3x6S5j373P4pWYCelP1XwMzYvT4Eyoz80FlXd-Vvmrj9m_vu4zPJTaJSYQvEwYPwIN9FwxPX5jHl6n3WJpafAUjORGoNoFj0MzitZFR4DzGEIqi54NGgp1Zn6jBHToeR8BS6CRKvvIpZeZzpHrf80Q"
+		},
+		{
+			"key": "auth3ID",
 			"value": "b2b37292-86c1-4d41-aad8-cd5db6ff51ec"
 		}
 	]

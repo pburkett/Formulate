@@ -38,6 +38,15 @@ class FormulasService {
     return res
   }
 
+  async getAllByProfile(userId, publicOnly) {
+    const query = { creatorId: userId }
+    if (publicOnly) {
+      query.public = true
+    }
+    const res = await dbContext.Formulas.find(query)
+    return res
+  }
+
   _checkFlourTotals(flourList) {
     let total = 0
     for (const ind in flourList) {
