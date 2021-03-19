@@ -8,6 +8,7 @@ const ItemSchema = new Schema({
 
 const Formula = new Schema(
   {
+    creatorId: { type: String, required: true },
     name: { type: String, required: true },
     ingredientList: [ItemSchema],
     flourList: [ItemSchema],
@@ -15,5 +16,10 @@ const Formula = new Schema(
   },
   { timestamps: true, toJSON: { virtuals: true } }
 )
-
+Formula.virtual('creator', {
+  localField: 'creatorId',
+  ref: 'Account',
+  foreignField: '_id',
+  justOne: true
+})
 export default Formula

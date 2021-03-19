@@ -41,6 +41,7 @@ export class DoughShapesController extends BaseController {
 
   async create(req, res, next) {
     try {
+      req.body.creatorId = req.userInfo.id
       const permissions = req.body.permissions || {}
       permissions.canEditPerms ? permissions.canEditPerms.push({ userId: req.userInfo.id }) : permissions.canEditPerms = [{ userId: req.userInfo.id }]
       const data = await doughShapesService.create(req.body)

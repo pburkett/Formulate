@@ -12,6 +12,15 @@ class DoughShapesService {
     return res
   }
 
+  async getAllByProfile(userId, publicOnly) {
+    const query = { creatorId: userId }
+    if (publicOnly) {
+      query.public = true
+    }
+    const res = await dbContext.DoughShapes.find(query)
+    return res
+  }
+
   async create(data) {
     const res = await dbContext.DoughShapes.create(data)
     return res
