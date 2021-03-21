@@ -4,11 +4,10 @@ import { doughShapesService } from '../services/DoughShapesService'
 import { permissionsService } from '../services/PermissionsService'
 import { UnAuthorized } from '../utils/Errors'
 
-export class DoughShapesController extends BaseController {
+export class RecipesController extends BaseController {
   constructor() {
-    super('api/doughshapes')
+    super('api/recipes')
     this.router
-      .get('/public', this.getAllPublic)
       .get('/:id', this.getOne)
       .use(Auth0Provider.getAuthorizedUserInfo)
       .post('', this.create)
