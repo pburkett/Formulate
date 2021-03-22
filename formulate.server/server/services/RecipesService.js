@@ -72,7 +72,6 @@ class RecipesService {
     const allWeights = await this._generateWeights(totalWeight, data.formula, data.creatorId)
     out.ingredientList = allWeights.ingredientList
     out.flourList = allWeights.flourList
-    console.log(out, totalWeight)
     const res = await dbContext.Recipes.create(out)
     return res
   }
