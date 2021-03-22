@@ -1,12 +1,11 @@
 import BaseController from '../utils/BaseController'
 import { Auth0Provider } from '@bcwdev/auth0provider'
-import { recipesService } from '../services/RecipesService'
 import { permissionsService } from '../services/PermissionsService'
 import { UnAuthorized } from '../utils/Errors'
-
-export class RecipesController extends BaseController {
+import { bakesService } from '../services/BakesService'
+export class BakesController extends BaseController {
   constructor() {
-    super('api/recipes')
+    super('api/bakes')
     this.router
       .use(Auth0Provider.getAuthorizedUserInfo)
       .get('/:id', this.getOne)
@@ -16,7 +15,7 @@ export class RecipesController extends BaseController {
   async getOne(req, res, next) {
     try {
       if (await permissionsService.verifyUse(req.params.id, req.userInfo.id, 'Recipe')) {
-        const data = await recipesService.getOne(req.params.id)
+        const data = await bakesService.getOne(req.params.id)
         res.send(data)
       } else { throw new UnAuthorized('You do not have permission to use this Recipe') }
     } catch (error) {
@@ -29,9 +28,9 @@ export class RecipesController extends BaseController {
       req.body.creatorId = req.userInfo.id
       const permissions = req.body.permissions || {}
       permissions.canUse ? permissions.canUse.push({ userId: req.userInfo.id }) : permissions.canUse = [{ userId: req.userInfo.id }]
-      const data = await recipesService.create(req.body)
+      const data = await bakesService.create(req.body)
       await permissionsService.create({
-        collectionName: 'Recipes',
+        collectionName: 'Bakes',
         itemId: data._id,
         ...permissions
       })

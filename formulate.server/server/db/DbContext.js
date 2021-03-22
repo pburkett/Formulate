@@ -5,6 +5,7 @@ import DoughShapeSchema from '../models/DoughShape'
 import FormulaSchema from '../models/Formula'
 import ProfileSchema from '../models/Profile'
 import RecipeSchema from '../models/Recipe'
+import BakeSchema from '../models/Bake'
 
 class DbContext {
   Permissions = mongoose.model('Permission', PermissionSchema);
@@ -13,6 +14,7 @@ class DbContext {
   Formulas = mongoose.model('Formula', FormulaSchema)
   Profiles = mongoose.model('Profile', ProfileSchema)
   Recipes = mongoose.model('Recipe', RecipeSchema)
+  Bakes = mongoose.model('Bake', BakeSchema)
 };
 
 export const dbContext = new DbContext()
