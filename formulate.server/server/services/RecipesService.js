@@ -1,14 +1,55 @@
 import { dbContext } from '../db/DbContext'
-import { BadRequest } from '../utils/Errors'
+import { BadRequest, UnAuthorized } from '../utils/Errors'
+import { doughShapesService } from './DoughShapesService'
+import { formulasService } from './FormulasService'
+import { permissionsService } from './PermissionsService'
 
 class RecipesService {
-  async getOne(id) {
-    const res = await dbContext.Recipes.findById(id)
-    return res
+  async _generateTotalDoughWeight(orderArray, userId) {
+    let out = 0
+    for (const ind in orderArray) {
+      const item = orderArray[ind]
+      if (await permissionsService.verifyUse(item.doughShape, userId)) {
+        const shape = await doughShapesService.getOne(item.doughShape)
+        out += shape.doughWeight * item.quantity
+      } else {
+        throw new UnAuthorized(`You are not authorized to use Doughshape with ID ${item.doughShape}`)
+      }
+    }
+    return out
   }
 
-  async getAllPublic() {
-    const res = await dbContext.Recipes.find({ public: true })
+  async _generateWeights(totalDoughWeight, formulaId, userId) {
+    if (await permissionsService.verifyUse(formulaId, userId)) {
+      const formula = await formulasService.getOne(formulaId)
+      const recipe = { ingredientList: [], flourList: [] }
+      let totalIngredientPercentage = 100
+
+      for (const ind in formula.ingredientList) {
+        const elem = formula.ingredientList[ind]
+        totalIngredientPercentage += elem.percentage
+      }
+      const totalFlourWeight = totalDoughWeight / totalIngredientPercentage * 100
+
+      for (const ind in formula.flourList) {
+        const elem = formula.flourList[ind]
+        const itemToInsert = { name: elem.name }
+        itemToInsert.weight = (totalFlourWeight * elem.percentage / 100).toFixed(1)
+        recipe.flourList.push(itemToInsert)
+      }
+      for (const ind in formula.ingredientList) {
+        const elem = formula.ingredientList[ind]
+        const itemToInsert = { name: elem.name }
+        itemToInsert.weight = (totalFlourWeight * elem.percentage / 100).toFixed(1)
+        recipe.ingredientList.push(itemToInsert)
+      }
+
+      return recipe
+    }
+  }
+
+  async getOne(id) {
+    const res = await dbContext.Recipes.findById(id)
     return res
   }
 
@@ -22,15 +63,17 @@ class RecipesService {
   }
 
   async create(data) {
-    const res = await dbContext.Recipes.create(data)
-    return res
-  }
-
-  async edit(id, userId, data) {
-    const res = await dbContext.Recipes.findByIdAndUpdate(id, data, { new: true })
-    if (!res) {
-      throw new BadRequest('Invalid Id')
+    const out = {
+      formulaId: data.formula,
+      creatorId: data.creatorId
     }
+    const totalWeight = await this._generateTotalDoughWeight(data.orderArray, data.creatorId)
+    out.totalWeight = totalWeight
+    const allWeights = await this._generateWeights(totalWeight, data.formula, data.creatorId)
+    out.ingredientList = allWeights.ingredientList
+    out.flourList = allWeights.flourList
+    console.log(out, totalWeight)
+    const res = await dbContext.Recipes.create(out)
     return res
   }
 

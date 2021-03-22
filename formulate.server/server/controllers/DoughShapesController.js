@@ -78,4 +78,3 @@ export class DoughShapesController extends BaseController {
     }
   }
 }
-

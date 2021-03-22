@@ -9,7 +9,8 @@ const ItemSchema = new Schema({
 const Recipe = new Schema(
   {
     creatorId: { type: String, required: true },
-    name: { type: String, required: true },
+    formulaId: { type: String, required: true },
+    totalWeight: { type: Number, required: true },
     ingredientList: [ItemSchema],
     flourList: [ItemSchema]
   },

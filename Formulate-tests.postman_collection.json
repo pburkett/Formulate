@@ -3616,10 +3616,19 @@
 									"\r",
 									"pm.test(\"Recipe has Proper inputed Values\", ()=>{\r",
 									"    pm.expect(res.formulaId).to.be.eql(formulaId)\r",
+									"    pm.expect(typeof res.totalWeight).to.be.eql('number')\r",
 									"    pm.expect(res.ingredientList[0].name).to.be.eql('water')\r",
-									"    pm.expect(typeof res.ingredientList[0].weight).to.be.eql('number')\r",
+									"     pm.expect(res.ingredientList[1].name).to.be.eql('salt')\r",
+									"     pm.expect(res.flourList[0].name).to.be.eql('flour')\r",
+									"     pm.expect(res.flourList[1].name).to.be.eql('flour other')\r",
 									"})\r",
-									""
+									"pm.test(\"Recipe has Proper calculated Values\", ()=>{\r",
+									"    pm.expect(res.ingredientList[0].weight).to.be.eql(4865.3)\r",
+									"    pm.expect(res.ingredientList[1].weight).to.be.eql(149.7)\r",
+									"    pm.expect(res.flourList[0].weight).to.be.eql(1497)\r",
+									"    pm.expect(res.flourList[1].weight).to.be.eql(5988)\r",
+									"    pm.expect(res.totalWeight).to.be.eql(12500)\r",
+									"})"
 								],
 								"type": "text/javascript"
 							}
@@ -3631,7 +3640,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{auth2}}",
+									"value": "{{auth1}}",
 									"type": "string"
 								}
 							]
@@ -3640,7 +3649,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"formula-{{formulaId}}\":[\r\n        { \"doughShape\":\"{{doughShape1Id}}\",\r\n        \"quantity\":5 },\r\n        { \"doughShape\":\"{{doughShape2Id}}\",\r\n        \"quantity\":10 }\r\n    ]\r\n}",
+							"raw": "{ \"formula\": \"{{formulaId}}\",\r\n    \"orderArray\":[\r\n        { \"doughShape\":\"{{doughShape1Id}}\",\r\n        \"quantity\":5 },\r\n        { \"doughShape\":\"{{doughShape2Id}}\",\r\n        \"quantity\":10 }\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
