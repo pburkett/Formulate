@@ -1,6 +1,6 @@
 import BaseController from '../utils/BaseController'
 import { Auth0Provider } from '@bcwdev/auth0provider'
-import { recipesService } from '../services/recipesService'
+import { recipesService } from '../services/RecipesService'
 import { permissionsService } from '../services/PermissionsService'
 import { UnAuthorized } from '../utils/Errors'
 
