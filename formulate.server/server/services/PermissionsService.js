@@ -2,29 +2,29 @@ import { dbContext } from '../db/DbContext'
 import { BadRequest } from '../utils/Errors'
 
 class PermissionsService {
-  async verifyUse(itemId, userId) {
+  async verifyUse(itemId, userId, collectionName = 'item') {
     const query = { itemId: itemId }
     const res = await dbContext.Permissions.find(query)
-    if (!res) {
-      throw new BadRequest('Permission not found, item cannot be accessed')
+    if (res.length === 0) {
+      throw new BadRequest(`Permission not found, ${collectionName} cannot be accessed`)
     }
     return res[0].canUse.find(p => p.userId === userId) || res[0].canEdit.find(p => p.userId === userId) || res[0].canEditPerms.find(p => p.userId === userId)
   }
 
-  async verifyEdit(itemId, userId) {
+  async verifyEdit(itemId, userId, collectionName = 'item') {
     const query = { itemId: itemId }
     const res = await dbContext.Permissions.find(query)
     if (!res) {
-      throw new BadRequest('Permission not found, item cannot be accessed')
+      throw new BadRequest(`Permission not found, ${collectionName} cannot be accessed`)
     }
     return res[0].canEdit.find(p => p.userId === userId) || res[0].canEditPerms.find(p => p.userId === userId)
   }
 
-  async verifyEditPerms(itemId, userId) {
+  async verifyEditPerms(itemId, userId, collectionName = 'item') {
     const query = { itemId: itemId }
     const res = await dbContext.Permissions.find(query)
     if (!res) {
-      throw new BadRequest('Permission not found, item cannot be accessed')
+      throw new BadRequest(`Permission not found, ${collectionName} cannot be accessed`)
     }
     return res[0].canEditPerms.find(p => p.userId === userId)
   }

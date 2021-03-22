@@ -1,5 +1,5 @@
 import { dbContext } from '../db/DbContext'
-import { BadRequest, UnAuthorized } from '../utils/Errors'
+import { BadRequest, NotAcceptable, UnAuthorized } from '../utils/Errors'
 import { doughShapesService } from './DoughShapesService'
 import { formulasService } from './FormulasService'
 import { permissionsService } from './PermissionsService'
@@ -9,9 +9,12 @@ class RecipesService {
     let out = 0
     for (const ind in orderArray) {
       const item = orderArray[ind]
-      if (await permissionsService.verifyUse(item.doughShape, userId)) {
+      if (await permissionsService.verifyUse(item.doughShape, userId, 'Dough Shape')) {
         const shape = await doughShapesService.getOne(item.doughShape)
-        out += shape.doughWeight * item.quantity
+        out += shape.doughWeight * Number(item.quantity)
+        if (!out) {
+          throw new NotAcceptable(`Total dough weight could not be generated: ${orderArray[ind]} is formatted incorrectly.`)
+        }
       } else {
         throw new UnAuthorized(`You are not authorized to use Doughshape with ID ${item.doughShape}`)
       }
@@ -20,7 +23,7 @@ class RecipesService {
   }
 
   async _generateWeights(totalDoughWeight, formulaId, userId) {
-    if (await permissionsService.verifyUse(formulaId, userId)) {
+    if (await permissionsService.verifyUse(formulaId, userId, 'Formula')) {
       const formula = await formulasService.getOne(formulaId)
       const recipe = { ingredientList: [], flourList: [] }
       let totalIngredientPercentage = 100
@@ -45,7 +48,7 @@ class RecipesService {
       }
 
       return recipe
-    }
+    } else { throw new UnAuthorized('You do not have permission to use this formula') }
   }
 
   async getOne(id) {
@@ -63,17 +66,20 @@ class RecipesService {
   }
 
   async create(data) {
-    const out = {
-      formulaId: data.formula,
-      creatorId: data.creatorId
+    try {
+      const totalWeight = await this._generateTotalDoughWeight(data.orderArray, data.creatorId)
+      const allWeights = await this._generateWeights(totalWeight, data.formula, data.creatorId)
+      const out = {
+        formulaId: data.formula,
+        creatorId: data.creatorId,
+        totalWeight,
+        ...allWeights
+      }
+      const res = await dbContext.Recipes.create(out)
+      return res
+    } catch (e) {
+      throw new BadRequest('Recipe could not be created: ' + e)
     }
-    const totalWeight = await this._generateTotalDoughWeight(data.orderArray, data.creatorId)
-    out.totalWeight = totalWeight
-    const allWeights = await this._generateWeights(totalWeight, data.formula, data.creatorId)
-    out.ingredientList = allWeights.ingredientList
-    out.flourList = allWeights.flourList
-    const res = await dbContext.Recipes.create(out)
-    return res
   }
 
   async remove(id, userId) {

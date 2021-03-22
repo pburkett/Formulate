@@ -22,7 +22,7 @@ export class FormulasController extends BaseController {
       if (!data.public) {
         req.userInfo = await Auth0Provider.getUserInfoFromBearerToken(req.headers.authorization)
       }
-      if (data.public || await permissionsService.verifyUse(req.params.id, req.userInfo.id)) {
+      if (data.public || await permissionsService.verifyUse(req.params.id, req.userInfo.id, 'Formula')) {
         res.send(data)
       } else { throw new UnAuthorized('You do not have permission to use this Formula') }
     } catch (error) {
@@ -58,7 +58,7 @@ export class FormulasController extends BaseController {
 
   async edit(req, res, next) {
     try {
-      if (await permissionsService.verifyEdit(req.params.id, req.userInfo.id)) {
+      if (await permissionsService.verifyEdit(req.params.id, req.userInfo.id, 'Formula')) {
         const data = await formulasService.edit(req.params.id, req.userInfo.id, req.body)
         res.send(data)
       } else { throw new UnAuthorized('You do not have permission to edit this Formula') }
@@ -69,7 +69,7 @@ export class FormulasController extends BaseController {
 
   async delete(req, res, next) {
     try {
-      if (await permissionsService.verifyEditPerms(req.params.id, req.userInfo.id)) {
+      if (await permissionsService.verifyEditPerms(req.params.id, req.userInfo.id, 'Formula')) {
         const data = await formulasService.remove(req.params.id, req.userInfo.id)
         res.send(data)
       } else { throw new UnAuthorized('You do not have permission to delete this Formula') }

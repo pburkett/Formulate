@@ -11,15 +11,21 @@ export class Forbidden extends Error {
   }
 }
 export class UnAuthorized extends Error {
-  constructor(message = 'Unauthorized') {
-    super(message)
+  constructor(...params) {
+    super(...params)
     this.status = 401
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, UnAuthorized)
+    }
   }
 }
 export class BadRequest extends Error {
-  constructor(message = 'Bad Request') {
-    super(message)
+  constructor(...params) {
+    super(...params)
     this.status = 400
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, BadRequest)
+    }
   }
 }
 export class NotAcceptable extends Error {
@@ -32,5 +38,8 @@ export class Unexpected extends Error {
   constructor(message = 'Unexpected Error') {
     super(message)
     this.status = 500
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, Unexpected)
+    }
   }
 }

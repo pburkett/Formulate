@@ -3622,6 +3622,7 @@
 									"     pm.expect(res.flourList[0].name).to.be.eql('flour')\r",
 									"     pm.expect(res.flourList[1].name).to.be.eql('flour other')\r",
 									"})\r",
+									"\r",
 									"pm.test(\"Recipe has Proper calculated Values\", ()=>{\r",
 									"    pm.expect(res.ingredientList[0].weight).to.be.eql(4865.3)\r",
 									"    pm.expect(res.ingredientList[1].weight).to.be.eql(149.7)\r",
@@ -3668,6 +3669,1068 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Cannot Create Recipe with Invald Format",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postFormulaRequest = {\r",
+									"    url: endpoint + '/api/formulas',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"formula Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [\r",
+									"                {\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"                },{\r",
+									"                \"name\": \"salt\",\r",
+									"                \"percentage\":2\r",
+									"                }\r",
+									"            ]\r",
+									"    })\r",
+									"    }\r",
+									"}\r",
+									"const postDoughShapeRequest1 = {\r",
+									"    url: endpoint + '/api/doughshapes',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"doughshape Test Name 1\",\r",
+									"        \"doughWeight\":500,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"})\r",
+									"    }\r",
+									"}\r",
+									"const postDoughShapeRequest2 = {\r",
+									"    url: endpoint + '/api/doughshapes',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"doughshape Test Name 2\",\r",
+									"        \"doughWeight\":1000,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"})\r",
+									"    }\r",
+									"}\r",
+									"\r",
+									"\r",
+									"pm.test(\"Post Formula\", ()=>{\r",
+									"    pm.sendRequest(postFormulaRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('formula Test Name', 'Formula had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Post Dough Shape 1\", ()=>{\r",
+									"    pm.sendRequest(postDoughShapeRequest1, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShape1Id\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('doughshape Test Name 1', 'Dough Shape had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Post Dough Shape 2\", ()=>{\r",
+									"    pm.sendRequest(postDoughShapeRequest2, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShape2Id\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('doughshape Test Name 2', 'Dough Shape had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 400\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(400)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \"formula\": \"{{formulaId}}\",\r\n    \"orderArray\":[\r\n        { \"doughShape\":\"{{doughShape1Id}}\",\r\n        \"quantity\":5 },\r\n        { \"doughShape\":\"{{doughShape2Id}}\"}\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/recipes",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"recipes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Recipe is Rejected if Forbidden Formula is Used",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer1 = pm.collectionVariables.get(\"auth1\")\r",
+									"const bearer2 = pm.collectionVariables.get(\"auth2\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer2\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postFormulaRequest = {\r",
+									"    url: endpoint + '/api/formulas',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer1\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"formula Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [\r",
+									"                {\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"                },{\r",
+									"                \"name\": \"salt\",\r",
+									"                \"percentage\":2\r",
+									"                }\r",
+									"            ]\r",
+									"    })\r",
+									"    }\r",
+									"}\r",
+									"const postDoughShapeRequest1 = {\r",
+									"    url: endpoint + '/api/doughshapes',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer2\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"doughshape Test Name 1\",\r",
+									"        \"doughWeight\":500,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"})\r",
+									"    }\r",
+									"}\r",
+									"const postDoughShapeRequest2 = {\r",
+									"    url: endpoint + '/api/doughshapes',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer2\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"doughshape Test Name 2\",\r",
+									"        \"doughWeight\":1000,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"})\r",
+									"    }\r",
+									"}\r",
+									"\r",
+									"\r",
+									"pm.test(\"Post Formula\", ()=>{\r",
+									"    pm.sendRequest(postFormulaRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('formula Test Name', 'Formula had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Post Dough Shape 1\", ()=>{\r",
+									"    pm.sendRequest(postDoughShapeRequest1, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShape1Id\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('doughshape Test Name 1', 'Dough Shape had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Post Dough Shape 2\", ()=>{\r",
+									"    pm.sendRequest(postDoughShapeRequest2, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShape2Id\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('doughshape Test Name 2', 'Dough Shape had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 400\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(400)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \"formula\": \"{{formulaId}}\",\r\n    \"orderArray\":[\r\n        { \"doughShape\":\"{{doughShape1Id}}\",\r\n        \"quantity\":5 },\r\n        { \"doughShape\":\"{{doughShape2Id}}\",\r\n        \"quantity\":10 }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/recipes",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"recipes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Recipe is Rejected if Forbidden Dough Shape is Used",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer1 = pm.collectionVariables.get(\"auth1\")\r",
+									"const bearer2 = pm.collectionVariables.get(\"auth2\")\r",
+									"\r",
+									"const postFormulaRequest = {\r",
+									"    url: endpoint + '/api/formulas',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer2\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"formula Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [\r",
+									"                {\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"                },{\r",
+									"                \"name\": \"salt\",\r",
+									"                \"percentage\":2\r",
+									"                }\r",
+									"            ]\r",
+									"    })\r",
+									"    }\r",
+									"}\r",
+									"const postDoughShapeRequest1 = {\r",
+									"    url: endpoint + '/api/doughshapes',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer1\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"doughshape Test Name 1\",\r",
+									"        \"doughWeight\":500,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"})\r",
+									"    }\r",
+									"}\r",
+									"const postDoughShapeRequest2 = {\r",
+									"    url: endpoint + '/api/doughshapes',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer2\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"doughshape Test Name 2\",\r",
+									"        \"doughWeight\":1000,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"})\r",
+									"    }\r",
+									"}\r",
+									"\r",
+									"\r",
+									"pm.test(\"Post Formula\", ()=>{\r",
+									"    pm.sendRequest(postFormulaRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('formula Test Name', 'Formula had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Post Dough Shape 1\", ()=>{\r",
+									"    pm.sendRequest(postDoughShapeRequest1, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShape1Id\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('doughshape Test Name 1', 'Dough Shape had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Post Dough Shape 2\", ()=>{\r",
+									"    pm.sendRequest(postDoughShapeRequest2, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShape2Id\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('doughshape Test Name 2', 'Dough Shape had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 400\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(400)\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \"formula\": \"{{formulaId}}\",\r\n    \"orderArray\":[\r\n        { \"doughShape\":\"{{doughShape1Id}}\",\r\n        \"quantity\":5 },\r\n        { \"doughShape\":\"{{doughShape2Id}}\",\r\n        \"quantity\":10 }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/recipes",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"recipes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Recipe with Invalid Formula ID",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postFormulaRequest = {\r",
+									"    url: endpoint + '/api/formulas',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"formula Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [\r",
+									"                {\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"                },{\r",
+									"                \"name\": \"salt\",\r",
+									"                \"percentage\":2\r",
+									"                }\r",
+									"            ]\r",
+									"    })\r",
+									"    }\r",
+									"}\r",
+									"const postDoughShapeRequest1 = {\r",
+									"    url: endpoint + '/api/doughshapes',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"doughshape Test Name 1\",\r",
+									"        \"doughWeight\":500,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"})\r",
+									"    }\r",
+									"}\r",
+									"const postDoughShapeRequest2 = {\r",
+									"    url: endpoint + '/api/doughshapes',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"doughshape Test Name 2\",\r",
+									"        \"doughWeight\":1000,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"})\r",
+									"    }\r",
+									"}\r",
+									"\r",
+									"\r",
+									"pm.test(\"Post Formula\", ()=>{\r",
+									"    pm.sendRequest(postFormulaRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('formula Test Name', 'Formula had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Post Dough Shape 1\", ()=>{\r",
+									"    pm.sendRequest(postDoughShapeRequest1, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShape1Id\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('doughshape Test Name 1', 'Dough Shape had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Post Dough Shape 2\", ()=>{\r",
+									"    pm.sendRequest(postDoughShapeRequest2, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShape2Id\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('doughshape Test Name 2', 'Dough Shape had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 400\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(400)\r",
+									"})\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \"formula\": \"This is an invalid formula ID\",\r\n    \"orderArray\":[\r\n        { \"doughShape\":\"{{doughShape1Id}}\",\r\n        \"quantity\":5 },\r\n        { \"doughShape\":\"{{doughShape2Id}}\",\r\n        \"quantity\":10 }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/recipes",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"recipes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Recipe with Invalid Dough Shape ID",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postFormulaRequest = {\r",
+									"    url: endpoint + '/api/formulas',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"formula Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [\r",
+									"                {\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"                },{\r",
+									"                \"name\": \"salt\",\r",
+									"                \"percentage\":2\r",
+									"                }\r",
+									"            ]\r",
+									"    })\r",
+									"    }\r",
+									"}\r",
+									"const postDoughShapeRequest1 = {\r",
+									"    url: endpoint + '/api/doughshapes',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"doughshape Test Name 1\",\r",
+									"        \"doughWeight\":500,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"})\r",
+									"    }\r",
+									"}\r",
+									"const postDoughShapeRequest2 = {\r",
+									"    url: endpoint + '/api/doughshapes',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"doughshape Test Name 2\",\r",
+									"        \"doughWeight\":1000,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"})\r",
+									"    }\r",
+									"}\r",
+									"\r",
+									"\r",
+									"pm.test(\"Post Formula\", ()=>{\r",
+									"    pm.sendRequest(postFormulaRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('formula Test Name', 'Formula had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Post Dough Shape 1\", ()=>{\r",
+									"    pm.sendRequest(postDoughShapeRequest1, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShape1Id\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('doughshape Test Name 1', 'Dough Shape had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Post Dough Shape 2\", ()=>{\r",
+									"    pm.sendRequest(postDoughShapeRequest2, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShape2Id\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('doughshape Test Name 2', 'Dough Shape had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 400\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(400)\r",
+									"})\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \"formula\": \"{{formulaId}}\",\r\n    \"orderArray\":[\r\n        { \"doughShape\":\"I am an invalid ID\",\r\n        \"quantity\":5 },\r\n        { \"doughShape\":\"{{doughShape2Id}}\",\r\n        \"quantity\":10 }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/api/recipes",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"recipes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Can Get Own Recipe by ID",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"\r",
+									"const getRequest = {\r",
+									"  url: endpoint + '/api/account',\r",
+									"  method: 'Get',\r",
+									"  header: {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Authorization': \"Bearer \" + bearer\r",
+									"  },\r",
+									"  body: {\r",
+									"  }\r",
+									"};\r",
+									"const postFormulaRequest = {\r",
+									"    url: endpoint + '/api/formulas',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"formula Test Name\",\r",
+									"        \"flourList\":\r",
+									"            [{\r",
+									"                \"name\":\"flour\",\r",
+									"                \"percentage\":20\r",
+									"            },{\r",
+									"                \"name\":\"flour other\",\r",
+									"                \"percentage\":80\r",
+									"            }],\r",
+									"            \"ingredientList\":\r",
+									"            [\r",
+									"                {\r",
+									"                \"name\":\"water\",\r",
+									"                \"percentage\":65\r",
+									"                },{\r",
+									"                \"name\": \"salt\",\r",
+									"                \"percentage\":2\r",
+									"                }\r",
+									"            ]\r",
+									"    })\r",
+									"    }\r",
+									"}\r",
+									"const postDoughShapeRequest1 = {\r",
+									"    url: endpoint + '/api/doughshapes',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"doughshape Test Name 1\",\r",
+									"        \"doughWeight\":500,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"})\r",
+									"    }\r",
+									"}\r",
+									"const postDoughShapeRequest2 = {\r",
+									"    url: endpoint + '/api/doughshapes',\r",
+									"    method: 'Post',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer\r",
+									"    },\r",
+									"    body: {\r",
+									"     mode: \"raw\",\r",
+									"      raw: JSON.stringify({\r",
+									"        \"name\": \"doughshape Test Name 2\",\r",
+									"        \"doughWeight\":1000,\r",
+									"        \"description\":\"Test Description\",\r",
+									"        \"pan\":\"medium-loaf\"\r",
+									"})\r",
+									"    }\r",
+									"}\r",
+									"\r",
+									"\r",
+									"pm.test(\"Post Formula\", ()=>{\r",
+									"    pm.sendRequest(postFormulaRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"formulaId\", res._id)\r",
+									"        console.log(res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Formula was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('formula Test Name', 'Formula had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Post Dough Shape 1\", ()=>{\r",
+									"    pm.sendRequest(postDoughShapeRequest1, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShape1Id\", res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('doughshape Test Name 1', 'Dough Shape had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Post Dough Shape 2\", ()=>{\r",
+									"    pm.sendRequest(postDoughShapeRequest2, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"doughShape2Id\", res._id)\r",
+									"         pm.expect(typeof res).to.be.eql('object', 'Dough Shape was not an object')\r",
+									"         pm.expect(res.name).to.be.eql('doughshape Test Name 2', 'Dough Shape had incorrect properties')\r",
+									"    });\r",
+									"})\r",
+									"\r",
+									"setTimeout(()=>{\r",
+									"    let formulaId = pm.variables.get(\"formulaId\")\r",
+									"let doughShape1Id = pm.variables.get(\"doughShape1Id\")\r",
+									"let doughShape2Id = pm.variables.get(\"doughShape2Id\")\r",
+									"    const postRecipeBody = `{ \"formula\": \"${formulaId}\",\r",
+									"    \"orderArray\":[\r",
+									"        { \"doughShape\":\"${doughShape1Id}\",\r",
+									"        \"quantity\":5 },\r",
+									"        { \"doughShape\":\"${doughShape2Id}\",\r",
+									"        \"quantity\":10 }\r",
+									"    ]\r",
+									"}`\r",
+									"const postRecipeRequest = {\r",
+									"    url: endpoint + '/api/recipes',\r",
+									"    method: \"Post\",\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + bearer\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: \"raw\",\r",
+									"        raw: postRecipeBody\r",
+									"    }\r",
+									"}\r",
+									"pm.test(\"Post Recipe\", ()=>{\r",
+									"    pm.sendRequest(postRecipeRequest, function (err, response) {\r",
+									"        let res = response.json()\r",
+									"        pm.variables.set(\"recipeId\", res._id)\r",
+									"    })\r",
+									"})\r",
+									"}, 10000)\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let formulaId = pm.variables.get(\"formulaId\")\r",
+									"const endpoint = pm.collectionVariables.get(\"endpoint\")\r",
+									"const bearer = pm.collectionVariables.get(\"auth1\")\r",
+									"\r",
+									"let res = pm.response.json();\r",
+									"pm.test(\"status code should be 200\", ()=>{\r",
+									"    pm.expect(pm.response.code).to.be.eql(200)\r",
+									"})\r",
+									"pm.test(\"Recipe has Proper inputed Values\", ()=>{\r",
+									"    pm.expect(res.formulaId).to.be.eql(formulaId)\r",
+									"    pm.expect(typeof res.totalWeight).to.be.eql('number')\r",
+									"    pm.expect(res.ingredientList[0].name).to.be.eql('water')\r",
+									"     pm.expect(res.ingredientList[1].name).to.be.eql('salt')\r",
+									"     pm.expect(res.flourList[0].name).to.be.eql('flour')\r",
+									"     pm.expect(res.flourList[1].name).to.be.eql('flour other')\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Recipe has Proper calculated Values\", ()=>{\r",
+									"    pm.expect(res.ingredientList[0].weight).to.be.eql(4865.3)\r",
+									"    pm.expect(res.ingredientList[1].weight).to.be.eql(149.7)\r",
+									"    pm.expect(res.flourList[0].weight).to.be.eql(1497)\r",
+									"    pm.expect(res.flourList[1].weight).to.be.eql(5988)\r",
+									"    pm.expect(res.totalWeight).to.be.eql(12500)\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/api/recipes/{{recipeId}}",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"api",
+								"recipes",
+								"{{recipeId}}"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
@@ -3693,6 +4756,11 @@
 		}
 	],
 	"variable": [
+		{
+			"key": "endpoint",
+			"value": "https://formulate-0.herokuapp.com",
+			"disabled": true
+		},
 		{
 			"key": "endpoint",
 			"value": "http://localhost:3000"

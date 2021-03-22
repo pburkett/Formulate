@@ -4,6 +4,9 @@ import { BadRequest } from '../utils/Errors'
 class DoughShapesService {
   async getOne(id) {
     const res = await dbContext.DoughShapes.findById(id)
+    if (!res) {
+      throw new BadRequest('Invalid ID!')
+    }
     return res
   }
 

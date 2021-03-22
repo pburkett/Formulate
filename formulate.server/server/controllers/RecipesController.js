@@ -1,6 +1,6 @@
 import BaseController from '../utils/BaseController'
 import { Auth0Provider } from '@bcwdev/auth0provider'
-import { recipesService } from '../services/RecipesService'
+import { recipesService } from '../services/recipesService'
 import { permissionsService } from '../services/PermissionsService'
 import { UnAuthorized } from '../utils/Errors'
 
@@ -8,20 +8,17 @@ export class RecipesController extends BaseController {
   constructor() {
     super('api/recipes')
     this.router
-      .get('/:id', this.getOne)
       .use(Auth0Provider.getAuthorizedUserInfo)
+      .get('/:id', this.getOne)
       .post('', this.create)
   }
 
   async getOne(req, res, next) {
     try {
-      const data = await recipesService.getOne(req.params.id)
-      if (!data.public) {
-        req.userInfo = await Auth0Provider.getUserInfoFromBearerToken(req.headers.authorization)
-      }
-      if (data.public || await permissionsService.verifyUse(req.params.id, req.userInfo.id)) {
+      if (await permissionsService.verifyUse(req.params.id, req.userInfo.id, 'Recipe')) {
+        const data = await recipesService.getOne(req.params.id)
         res.send(data)
-      } else { throw new UnAuthorized('You do not have permission to use this DoughShape') }
+      } else { throw new UnAuthorized('You do not have permission to use this Recipe') }
     } catch (error) {
       next(error)
     }

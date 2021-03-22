@@ -22,7 +22,7 @@ export class DoughShapesController extends BaseController {
       if (!data.public) {
         req.userInfo = await Auth0Provider.getUserInfoFromBearerToken(req.headers.authorization)
       }
-      if (data.public || await permissionsService.verifyUse(req.params.id, req.userInfo.id)) {
+      if (data.public || await permissionsService.verifyUse(req.params.id, req.userInfo.id, 'Dough Shape')) {
         res.send(data)
       } else { throw new UnAuthorized('You do not have permission to use this DoughShape') }
     } catch (error) {
@@ -58,7 +58,7 @@ export class DoughShapesController extends BaseController {
 
   async edit(req, res, next) {
     try {
-      if (await permissionsService.verifyEdit(req.params.id, req.userInfo.id)) {
+      if (await permissionsService.verifyEdit(req.params.id, req.userInfo.id, 'Dough Shape')) {
         const data = await doughShapesService.edit(req.params.id, req.userInfo.id, req.body)
         res.send(data)
       } else { throw new UnAuthorized('You do not have permission to edit this DoughShape') }
@@ -69,7 +69,7 @@ export class DoughShapesController extends BaseController {
 
   async delete(req, res, next) {
     try {
-      if (await permissionsService.verifyEditPerms(req.params.id, req.userInfo.id)) {
+      if (await permissionsService.verifyEditPerms(req.params.id, req.userInfo.id, 'Dough Shape')) {
         const data = await doughShapesService.remove(req.params.id, req.userInfo.id)
         res.send(data)
       } else { throw new UnAuthorized('You do not have permission to delete this DoughShape') }
