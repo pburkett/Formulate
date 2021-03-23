@@ -1,6 +1,6 @@
 import { dbContext } from '../db/DbContext'
 import { recipesService } from './RecipesService'
-
+import { permissionsService } from '../services/PermissionsService'
 class BakesService {
   async create(data) {
     const out = {
@@ -14,6 +14,7 @@ class BakesService {
       item.creatorId = data.creatorId
       const recipe = await recipesService.create(item)
       out.recipes.push({ recipeId: recipe.id })
+
       for (const i in recipe.flourList) {
         const flour = recipe.flourList[i]
         const indexOfMatch = out.flourList.findIndex(f => f.name === flour.name)
@@ -33,6 +34,14 @@ class BakesService {
           out.ingredientList.push(ingredient)
         }
       }
+
+      const permissions = data.permissions || {}
+      permissions.canUse ? permissions.canUse.push({ userId: data.creatorId }) : permissions.canUse = [{ userId: data.creatorId }]
+      await permissionsService.create({
+        collectionName: 'Recipes',
+        itemId: recipe._id,
+        ...permissions
+      })
     }
 
     const res = await dbContext.Bakes.create(out)
