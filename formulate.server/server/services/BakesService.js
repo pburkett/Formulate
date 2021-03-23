@@ -2,6 +2,11 @@ import { dbContext } from '../db/DbContext'
 import { recipesService } from './RecipesService'
 import { permissionsService } from '../services/PermissionsService'
 class BakesService {
+  async getOne(id) {
+    const res = await dbContext.Bakes.findById(id)
+    return res
+  }
+
   async create(data) {
     const out = {
       creatorId: data.creatorId,

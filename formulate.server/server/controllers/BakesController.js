@@ -14,10 +14,10 @@ export class BakesController extends BaseController {
 
   async getOne(req, res, next) {
     try {
-      if (await permissionsService.verifyUse(req.params.id, req.userInfo.id, 'Recipe')) {
+      if (await permissionsService.verifyUse(req.params.id, req.userInfo.id, 'Bake')) {
         const data = await bakesService.getOne(req.params.id)
         res.send(data)
-      } else { throw new UnAuthorized('You do not have permission to use this Recipe') }
+      } else { throw new UnAuthorized('You do not have permission to use this Bake') }
     } catch (error) {
       next(error)
     }
